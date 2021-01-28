@@ -1,40 +1,44 @@
 import discord
+import random
+from discord.ext import commands
+
+app = commands.Bot(command_prefix='!')
 
 
-class chatbot(discord.Client):
-    # 프로그램이 처음 실행되었을 때 초기 구성
-    async def on_ready(self):
-        # 상태 메시지 설정
-        # 종류는 3가지: Game, Streaming, CustomActivity
-        game = discord.Game("내용")
+ls = ()
 
-        # 계정 상태를 변경한다.
-        # 온라인 상태, game 중으로 설정
-        await client.change_presence(status=discord.Status.online, activity=game)
-
-        # 준비가 완료되면 콘솔 창에 "READY!"라고 표시
-        print("READY")
-
-    # 봇에 메시지가 오면 수행 될 액션
-    async def on_message(self, message):
-        # SENDER가 BOT일 경우 반응을 하지 않도록 한다.
-        if message.author.bot:
-            return None
-        
-        # message.content = message의 내용
-        if message.content == "!바보":
-            # 현재 채널을 받아옴
-            channel = message.channel
-            # 답변 내용 구성
-            msg = "너도 바보"
-            # msg에 지정된 내용대로 메시지를 전송
-            await channel.send(msg)
-            return None
+def roll(l):
+    data = list(l)
+    random.shuffle(data)
+    # print(data[0:len(data) // 2])
+    # print(data[len(data) // 2:])
+    # await ctx.send(data)
+    t1 = ' '.join(data[0:len(data) // 2])
+    t2 = ' '.join(data[len(data) // 2:])
+    embed = discord.Embed(title='Team', color=0xAAB9FF)
+    embed.add_field(name='1팀', value=t1, inline=True)
+    embed.add_field(name='2팀', value=t2, inline=True)
+    return embed
 
 
-# 프로그램이 실행되면 제일 처음으로 실행되는 함수
-if __name__ == "__main__":
-    # 객체를 생성
-    client = chatbot()
-    # TOKEN 값을 통해 로그인하고 봇을 실행
-    client.run('토큰값넣어서 실행')
+@app.event
+async def on_ready():
+    print(app.user.name)
+    await app.change_presence(status=discord.Status.online, activity=None)
+
+
+@app.command()
+async def h(ctx):
+    await ctx.send('help')
+
+@app.command()
+async def team(ctx, *l):
+    global ls
+    ls = l
+    await ctx.send(embed=roll(l))
+
+@app.command()
+async def reroll(ctx):
+    await ctx.send(embed=roll(ls))
+
+app.run('토큰')
